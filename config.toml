@@ -1,0 +1,68 @@
+# xauth 配置文件
+
+[server]
+# 监听地址：0.0.0.0 表示允许所有外部访问，127.0.0.1 仅限本地访问
+host = "0.0.0.0"
+# 服务监听端口
+port = 3000
+# 调试模式：开启后将在控制台打印详细的请求和用户信息日志
+debug = false
+
+[providers]
+
+# GitHub OAuth 认证
+# 应用创建地址: https://github.com/settings/developers
+# 环境变量覆盖: GITHUB_ID, GITHUB_SECRET
+[providers.github]
+client_id = ""
+client_secret = ""
+
+# 微博 OAuth 认证
+# 应用创建地址: https://open.weibo.com/connect
+# 环境变量覆盖: WEIBO_ID, WEIBO_SECRET
+[providers.weibo]
+client_id = ""
+client_secret = ""
+
+# Google OAuth 认证
+# 应用创建地址: https://console.cloud.google.com/apis/credentials
+# 环境变量覆盖: GOOGLE_ID, GOOGLE_SECRET
+[providers.google]
+client_id = ""
+client_secret = ""
+
+# Twitter / X OAuth 认证
+# 应用创建地址: https://developer.x.com/
+# 环境变量覆盖: TWITTER_ID, TWITTER_SECRET
+[providers.twitter]
+client_id = ""
+client_secret = ""
+
+# QQ OAuth 认证
+# 应用创建地址: https://connect.qq.com/
+# 环境变量覆盖: QQ_ID, QQ_SECRET
+[providers.qq]
+client_id = ""
+client_secret = ""
+
+# OIDC (OpenID Connect) 认证
+# 支持动态发现 (推荐) 或显式指定端点
+# 环境变量覆盖: OIDC_ID, OIDC_SECRET, OIDC_ISSUER, OIDC_AUTH_URL, OIDC_TOKEN_URL, OIDC_USERINFO_URL, OIDC_SCOPES
+[providers.oidc]
+client_id = ""
+client_secret = ""
+# 方式1: 使用 issuer 自动发现 OIDC 端点 (如 Google, Auth0 等)
+issuer = ""
+# 方式2: 显式指定端点 (如果不支持自动发现)
+# auth_url = ""
+# token_url = ""
+# userinfo_url = ""
+# 申请的权限范围
+scopes = "openid profile email"
+
+# 华为 OAuth 认证
+# 应用创建地址: https://developer.huawei.com/consumer/cn/service/josp/agc/index.html
+# 环境变量覆盖: HUAWEI_ID, HUAWEI_SECRET
+[providers.huawei]
+client_id = ""
+client_secret = ""
