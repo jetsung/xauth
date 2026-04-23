@@ -16,15 +16,21 @@ XAuth 旨在提供一个统一、轻量且安全的 OAuth 2.0 认证中转方案
 
 ## 🚀 快速开始
 
-### 1. 准备配置文件
+### 1. 准备配置文件（可选）
 
-创建 `config.toml`：
+创建 `config.toml`（可选，若不存在将使用默认配置）：
 
 ```toml
 [server]
+# 监听地址（默认 0.0.0.0）
 host = "0.0.0.0"
+# 监听端口（默认 3000，也可通过 PORT 环境变量覆盖）
 port = 3000
-debug = true  # 开启调试模式可查看详细的用户信息映射过程
+# 调试模式（默认 false，也可通过 DEBUG 环境变量覆盖）
+debug = true
+
+# 服务的外部访问地址（可选，用于 OAuth 回调地址等，可通过 SERVER_URL 环境变量覆盖）
+# server_url = "http://xauth.example.com"
 
 [providers.github]
 client_id = "your_client_id"
@@ -59,11 +65,38 @@ cargo build --release
 
 ## 🛠 配置说明
 
-### 环境配置方式
+### 配置优先级
 
-项目支持多种配置方式，优先级为：**环境变量 (`export`) > .env 文件 > config.toml**。
+项目支持多种配置方式，优先级为： **环境变量 (`export`) > config.toml > 默认值**
 
-#### 1. 开发环境 (`.env`)
+- **config.toml**：项目根目录下的配置文件（可选，不存在时使用默认值）
+- **环境变量**：最高优先级，可覆盖 config.toml 中的值
+- **默认值**：当 config.toml 不存在或配置项缺失时使用（如 `PORT` 默认 `3000`，`host` 默认 `0.0.0.0`）
+
+#### 1. 仅使用环境变量（推荐用于生产环境）
+
+无需任何配置文件，直接通过环境变量启动：
+
+```bash
+export GITHUB_ID="your_client_id"
+export GITHUB_SECRET="your_client_secret"
+export PORT=3000
+export DEBUG=false
+./xauth
+```
+
+#### 2. config.toml + 环境变量覆盖（推荐用于开发环境）
+
+先创建 `config.toml`，再通过环境变量覆盖特定配置：
+
+```bash
+cp config.toml config.toml.bak  # 备份
+export PORT=8080  # 覆盖默认的 3000
+./xauth
+```
+
+#### 3. .env 文件（仅用于本地开发）
+
 在本地开发时，推荐使用 `.env` 文件来管理配置：
 1. 将 `.env.example` 复制一份并重命名为 `.env`：
    ```bash
@@ -72,11 +105,6 @@ cargo build --release
 2. 编辑 `.env` 文件，填入你的 `Client ID` 和 `Client Secret` 等敏感信息。
 3. **注意**：`.env` 文件包含敏感凭证，**严禁提交到 git 仓库**。
 
-#### 2. 生产环境 (环境变量)
-在生产环境或容器部署中，建议通过系统环境变量注入配置，不要在磁盘上保留 `.env` 文件。
-* **Docker/K8s**：在运行环境中设置对应的变量（如 `GITHUB_ID`, `GITHUB_SECRET` 等）。
-* **手动部署**：通过 `export` 命令或进程管理器设置环境变量。
-
 ### 环境变量映射
 
 除 `config.toml` 外，你还可以通过环境变量快速覆盖配置：
@@ -84,10 +112,10 @@ cargo build --release
 #### 基础配置
 | 配置项 | 环境变量 | 说明 |
 |--------|----------|------|
-| server.port | `PORT` | 覆盖监听端口 |
-| server.host | `SERVER_URL` | 显式指定服务基础 URL |
+| server.port | `PORT` | 监听端口（默认 `3000`）|
+| server.host | - | 监听地址（默认 `0.0.0.0`，仅在 config.toml 中配置）|
+| server.server_url | `SERVER_URL` | 服务的外部访问地址（可选，用于 OAuth 回调等）|
 | server.debug | `DEBUG` | 开启/关闭调试模式 (`true`/`1`) |
-| config_file | `CONFIG_FILE` | 配置文件路径 (默认 `config.toml`) |
 
 #### 提供商配置 (Client ID & Secret)
 | 提供商 | ID 变量 | Secret 变量 |
@@ -109,7 +137,7 @@ cargo build --release
 | {name}.token_url | `{NAME}_TOKEN_URL` | 显式指定令牌地址 |
 | {name}.userinfo_url | `{NAME}_USERINFO_URL` | 显式指定用户信息地址 |
 
-> **提示**：只有在 `config.toml` 或环境变量中设置了 `client_id` 且不为空的提供商，才会在 `/` 接口中显示并可用。
+> **提示**：只有在配置了 `client_id` 且不为空的提供商（无论来自 `config.toml` 还是环境变量），才会在 `/` 接口中显示并可用。
 
 ### OIDC 配置示例
 

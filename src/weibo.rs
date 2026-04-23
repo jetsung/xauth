@@ -43,7 +43,7 @@ impl AuthProvider for WeiboProvider {
         let mut state_params = std::collections::HashMap::new();
         state_params.insert("redirect", redirect.unwrap_or(""));
         state_params.insert("state", state.unwrap_or(""));
-        state_params.insert("type", "weibo");
+        // state_params.insert("type", "weibo");
         
         let state_value = serde_urlencoded::to_string(&state_params).unwrap_or_default();
 

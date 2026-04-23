@@ -26,9 +26,16 @@ pub struct Config {
 #[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
     pub host: String,
+    #[serde(default = "default_port")]
     pub port: u16,
     #[serde(default)]
     pub debug: bool,
+    #[serde(default)]
+    pub server_url: Option<String>,
+}
+
+fn default_port() -> u16 {
+    3000
 }
 
 #[derive(Debug, Deserialize, Clone, Default)]
@@ -71,11 +78,22 @@ pub fn load_config_with_env(path: &str, env: &impl EnvProvider) -> Result<Config
         path.to_string()
     };
 
-    let content = fs::read_to_string(&config_path)
-        .with_context(|| format!("Failed to read config file: {}", config_path))?;
-
-    let mut config: Config = toml::from_str(&content)
-        .with_context(|| format!("Failed to parse TOML config: {}", config_path))?;
+    let mut config: Config = match fs::read_to_string(&config_path) {
+        Ok(content) => toml::from_str(&content)
+            .with_context(|| format!("Failed to parse TOML config: {}", config_path))?,
+        Err(_) => {
+            // 文件不存在时，返回默认配置
+            Config {
+                server: ServerConfig {
+                    host: "0.0.0.0".to_string(),
+                    port: 3000,
+                    debug: false,
+                    server_url: None,
+                },
+                providers: HashMap::new(),
+            }
+        }
+    };
 
     apply_env_overrides(&mut config, env)?;
 
@@ -129,7 +147,7 @@ fn apply_env_overrides(config: &mut Config, env: &impl EnvProvider) -> Result<()
     }
     
     if let Some(server_url) = env.var("SERVER_URL") {
-        config.server.host = server_url;
+        config.server.server_url = Some(server_url);
     }
 
     if let Some(debug_str) = env.var("DEBUG") {
