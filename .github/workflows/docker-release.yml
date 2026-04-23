@@ -11,6 +11,11 @@ on:
   # paths:
   #   - 'version.txt'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag'
+        required: false
+        default: ''
 
 env:
   branch: latest
@@ -39,8 +44,14 @@ jobs:
       - name: Get version
         id: get_version
         run: |
-          version=$(cat version.txt)
-          echo "version=${version}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            version=${{ github.ref_name }}
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.version }}" ]]; then
+            version=${{ github.event.inputs.version }}
+          else
+            version=latest-$(date +%Y%m%d)
+          fi
+          echo "version=${version#v}" >> $GITHUB_OUTPUT
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
